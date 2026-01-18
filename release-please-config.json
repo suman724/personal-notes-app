@@ -1,0 +1,9 @@
+{
+  "release-type": "node",
+  "packages": {
+    ".": {
+      "package-name": "personal-notes",
+      "changelog-path": "CHANGELOG.md"
+    }
+  }
+}
