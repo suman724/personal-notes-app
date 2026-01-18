@@ -19,6 +19,7 @@ npm run format     # format code (if configured)
 ```
 If tests are added, keep a `npm run test` script (Vitest preferred for Vite).
 If this repo uses a different package manager, mirror the same script names.
+This repo uses a pre-push hook in `.githooks/pre-push` that runs tests and a Docker build; set `SKIP_DOCKER_BUILD=1` to skip the Docker step.
 
 ## Coding Style & Naming Conventions
 - Indentation: 2 spaces; no tabs.
