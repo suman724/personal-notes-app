@@ -22,6 +22,7 @@ npm run dist:electron       # build distributable installers (DMG/NSIS/AppImage)
 ```
 For ad-hoc runs: `npm run dev -w apps/web`, `npm run preview -w apps/web`, or `npm run start -w apps/electron`.
 CI runs tests, lint, web build, and Docker build (see `.github/workflows/ci.yml`).
+If the global npm cache has permission issues, use a local cache for packaging, for example:\n`NPM_CONFIG_CACHE=/Users/suman/Projects/personal-notes-app/.npm-cache npm run dist:electron`.
 
 ## Coding Style & Naming Conventions
 - Indentation: 2 spaces; no tabs.
