@@ -21,10 +21,13 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm run test
+        run: npm run test -w apps/web
+
+      - name: Lint
+        run: npm run lint -w apps/web
 
       - name: Build app
-        run: npm run build
+        run: npm run build -w apps/web
 
       - name: Build Docker image
         run: docker build -t personal-notes-app:ci .

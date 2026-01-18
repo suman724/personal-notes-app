@@ -1,42 +1,16 @@
 {
-  "name": "personal-notes-app",
+  "name": "personal-notes-monorepo",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "workspaces": ["apps/*"],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "lint": "eslint src --ext ts,tsx",
-    "format": "prettier --check ."
-  },
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-markdown": "^9.0.1",
-    "remark-gfm": "^4.0.0"
+    "dev:web": "npm run dev -w apps/web",
+    "dev:electron": "concurrently -k \"npm run dev -w apps/web\" \"npm run dev -w apps/electron\"",
+    "build:web": "npm run build -w apps/web",
+    "test:web": "npm run test -w apps/web",
+    "lint:web": "npm run lint -w apps/web",
+    "format:web": "npm run format -w apps/web"
   },
   "devDependencies": {
-    "@tailwindcss/typography": "^0.5.10",
-    "@testing-library/jest-dom": "^6.1.4",
-    "@testing-library/react": "^14.1.2",
-    "@types/node": "^20.10.6",
-    "@types/react": "^18.2.43",
-    "@types/react-dom": "^18.2.17",
-    "@vitejs/plugin-react": "^5.1.2",
-    "autoprefixer": "^10.4.17",
-    "eslint": "^8.56.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-react": "^7.33.2",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.5",
-    "jsdom": "^23.0.1",
-    "postcss": "^8.4.33",
-    "prettier": "^3.1.1",
-    "tailwindcss": "^3.4.0",
-    "typescript": "^5.3.3",
-    "vite": "^7.3.1",
-    "vitest": "^4.0.17"
+    "concurrently": "^8.2.2"
   }
 }

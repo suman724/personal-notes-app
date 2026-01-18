@@ -1,8 +1,8 @@
 import { Note } from '../types';
 
 export interface NotesRepository {
-  loadNotes(): Note[];
-  saveNotes(notes: Note[]): void;
+  loadNotes(): Promise<Note[]>;
+  saveNotes(notes: Note[]): Promise<void>;
 }
 
 export class LocalStorageNotesRepository implements NotesRepository {
@@ -12,7 +12,7 @@ export class LocalStorageNotesRepository implements NotesRepository {
     this.storageKey = storageKey;
   }
 
-  loadNotes(): Note[] {
+  async loadNotes(): Promise<Note[]> {
     if (typeof window === 'undefined') {
       return [];
     }
@@ -34,7 +34,7 @@ export class LocalStorageNotesRepository implements NotesRepository {
     }
   }
 
-  saveNotes(notes: Note[]): void {
+  async saveNotes(notes: Note[]): Promise<void> {
     if (typeof window === 'undefined') {
       return;
     }
@@ -48,3 +48,21 @@ export class LocalStorageNotesRepository implements NotesRepository {
 }
 
 export const defaultNotesRepository = new LocalStorageNotesRepository('personal-notes-v1');
+
+export class ElectronNotesRepository implements NotesRepository {
+  async loadNotes(): Promise<Note[]> {
+    if (typeof window === 'undefined' || !window.electronAPI) {
+      return [];
+    }
+
+    return window.electronAPI.loadNotes();
+  }
+
+  async saveNotes(notes: Note[]): Promise<void> {
+    if (typeof window === 'undefined' || !window.electronAPI) {
+      return;
+    }
+
+    await window.electronAPI.saveNotes(notes);
+  }
+}

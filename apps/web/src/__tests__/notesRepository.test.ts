@@ -8,7 +8,7 @@ describe('LocalStorageNotesRepository', () => {
     window.localStorage.clear();
   });
 
-  it('persists and restores notes', () => {
+  it('persists and restores notes', async () => {
     const repository = new LocalStorageNotesRepository(storageKey);
     const notes: Note[] = [
       {
@@ -21,16 +21,16 @@ describe('LocalStorageNotesRepository', () => {
       },
     ];
 
-    repository.saveNotes(notes);
+    await repository.saveNotes(notes);
 
-    const loaded = repository.loadNotes();
+    const loaded = await repository.loadNotes();
     expect(loaded).toEqual(notes);
   });
 
-  it('returns an empty array for invalid data', () => {
+  it('returns an empty array for invalid data', async () => {
     window.localStorage.setItem(storageKey, '{bad json');
 
     const repository = new LocalStorageNotesRepository(storageKey);
-    expect(repository.loadNotes()).toEqual([]);
+    expect(await repository.loadNotes()).toEqual([]);
   });
 });
