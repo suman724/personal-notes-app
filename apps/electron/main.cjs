@@ -45,7 +45,20 @@ function getRendererLocation(mode) {
     return { type: 'url', value: `${devUrl}${suffix}` };
   }
 
-  const filePath = path.join(app.getAppPath(), 'renderer', 'index.html');
+  const candidates = [];
+  const resourcesPath = process.resourcesPath;
+  const appPath = app.getAppPath();
+
+  candidates.push(path.join(resourcesPath, 'renderer', 'index.html'));
+  candidates.push(path.join(resourcesPath, 'app.asar', 'renderer', 'index.html'));
+  candidates.push(path.join(appPath, 'renderer', 'index.html'));
+  candidates.push(path.join(appPath, 'dist', 'index.html'));
+
+  const filePath = candidates.find((candidate) => fs.existsSync(candidate));
+  if (!filePath) {
+    throw new Error(`Renderer bundle not found. Tried: ${candidates.join(', ')}`);
+  }
+
   return { type: 'file', value: filePath, query: mode ? { mode } : undefined };
 }
 
@@ -64,11 +77,16 @@ function createMainWindow() {
     },
   });
 
-  const target = getRendererLocation();
-  if (target.type === 'url') {
-    mainWindow.loadURL(target.value);
-  } else {
-    mainWindow.loadFile(target.value, { query: target.query });
+  try {
+    const target = getRendererLocation();
+    if (target.type === 'url') {
+      mainWindow.loadURL(target.value);
+    } else {
+      mainWindow.loadFile(target.value, { query: target.query });
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    mainWindow.loadURL(`data:text/plain,${encodeURIComponent(message)}`);
   }
 
   mainWindow.on('closed', () => {
@@ -94,11 +112,16 @@ function createQuickWindow() {
     },
   });
 
-  const target = getRendererLocation('quick');
-  if (target.type === 'url') {
-    quickWindow.loadURL(target.value);
-  } else {
-    quickWindow.loadFile(target.value, { query: target.query });
+  try {
+    const target = getRendererLocation('quick');
+    if (target.type === 'url') {
+      quickWindow.loadURL(target.value);
+    } else {
+      quickWindow.loadFile(target.value, { query: target.query });
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    quickWindow.loadURL(`data:text/plain,${encodeURIComponent(message)}`);
   }
 
   quickWindow.on('blur', () => {

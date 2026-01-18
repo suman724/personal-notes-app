@@ -6,7 +6,7 @@ directories:
   buildResources: apps/electron/assets
 files:
   - '**/*'
-extraFiles:
+extraResources:
   - from: apps/web/dist
     to: renderer
 mac:
