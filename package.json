@@ -9,12 +9,13 @@
     "test:web": "npm run test -w apps/web",
     "lint:web": "npm run lint -w apps/web",
     "format:web": "npm run format -w apps/web",
-    "pack:electron": "npm run build:web && electron-builder --config electron-builder.yml --dir",
-    "dist:electron": "npm run build:web && electron-builder --config electron-builder.yml"
+    "pack:electron": "cross-env VITE_BASE=./ npm run build:web && electron-builder --config electron-builder.yml --dir",
+    "dist:electron": "cross-env VITE_BASE=./ npm run build:web && electron-builder --config electron-builder.yml"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
     "cross-spawn": "^7.0.3",
+    "cross-env": "^7.0.3",
     "electron-builder": "^24.13.3",
     "rxjs": "^7.8.1"
   }
