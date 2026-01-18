@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useNotes } from './hooks/useNotes';
+import { useTheme } from './hooks/useTheme';
 import {
   collectTags,
   filterNotes,
@@ -17,6 +18,7 @@ const emptyStateCopy =
 
 function App() {
   const { notes, addNote, updateNote, deleteNote } = useNotes();
+  const { theme, themes, setTheme } = useTheme();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTag, setActiveTag] = useState<string | null>(null);
@@ -92,13 +94,43 @@ function App() {
             <h1 className="text-3xl font-semibold text-ink">Markdown Vault</h1>
             <p className="mt-2 max-w-xl text-sm text-slate-600">{emptyStateCopy}</p>
           </div>
-          <button
-            type="button"
-            onClick={handleCreateNote}
-            className="rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5"
-          >
-            New note
-          </button>
+          <div className="flex flex-col gap-3 md:items-end">
+            <button
+              type="button"
+              onClick={handleCreateNote}
+              className="rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5"
+            >
+              New note
+            </button>
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+                Theme
+              </span>
+              {themes.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setTheme(option.id)}
+                  className={`flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold transition ${
+                    theme === option.id
+                      ? 'border-accent bg-accent text-white'
+                      : 'border-panel-border bg-white text-ink hover:border-ink'
+                  }`}
+                >
+                  <span
+                    aria-hidden
+                    className={`h-3 w-3 rounded-full border shadow-sm ${
+                      theme === option.id ? 'border-white/70' : 'border-ink/10'
+                    }`}
+                    style={{
+                      background: `linear-gradient(135deg, ${option.swatch.accent}, ${option.swatch.soft})`,
+                    }}
+                  />
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </header>
 
         <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
