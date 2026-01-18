@@ -4,21 +4,57 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+:root,
+:root[data-theme='dawn'] {
   --paper: #f4efe8;
   --ink: #2a2724;
   --accent: #c0582a;
   --accent-soft: #f1c7a9;
   --panel: #ffffff;
   --panel-border: #e6ddd2;
+  --wash-1: #f1c7a9;
+  --wash-2: #f0e2d1;
+}
+
+:root[data-theme='sage'] {
+  --paper: #eef4ee;
+  --ink: #27312b;
+  --accent: #2f7f5e;
+  --accent-soft: #c7e4d5;
+  --panel: #ffffff;
+  --panel-border: #d9e6dc;
+  --wash-1: #c7e4d5;
+  --wash-2: #d9ece2;
+}
+
+:root[data-theme='cobalt'] {
+  --paper: #eef3f7;
+  --ink: #1f2a34;
+  --accent: #2a5fa8;
+  --accent-soft: #c6d8f1;
+  --panel: #ffffff;
+  --panel-border: #d6e0ea;
+  --wash-1: #c6d8f1;
+  --wash-2: #d9e7f6;
+}
+
+:root[data-theme='clay'] {
+  --paper: #f6f0ea;
+  --ink: #2f2621;
+  --accent: #b05a47;
+  --accent-soft: #f0cbb8;
+  --panel: #ffffff;
+  --panel-border: #e8d8cf;
+  --wash-1: #f0cbb8;
+  --wash-2: #f3e2d6;
 }
 
 @layer base {
   body {
     @apply font-sans text-ink;
     background:
-      radial-gradient(1200px 600px at 10% -10%, rgba(241, 199, 169, 0.8) 0%, transparent 60%),
-      radial-gradient(900px 700px at 110% 0%, rgba(240, 226, 209, 0.9) 0%, transparent 55%),
+      radial-gradient(1200px 600px at 10% -10%, var(--wash-1) 0%, transparent 60%),
+      radial-gradient(900px 700px at 110% 0%, var(--wash-2) 0%, transparent 55%),
       var(--paper);
     min-height: 100vh;
   }
