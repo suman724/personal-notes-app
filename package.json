@@ -8,9 +8,12 @@
     "build:web": "npm run build -w apps/web",
     "test:web": "npm run test -w apps/web",
     "lint:web": "npm run lint -w apps/web",
-    "format:web": "npm run format -w apps/web"
+    "format:web": "npm run format -w apps/web",
+    "pack:electron": "npm run build:web && electron-builder --config electron-builder.yml --dir",
+    "dist:electron": "npm run build:web && electron-builder --config electron-builder.yml"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "electron-builder": "^24.13.3"
   }
 }

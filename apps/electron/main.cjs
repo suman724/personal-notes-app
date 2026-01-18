@@ -2,6 +2,8 @@ const { app, BrowserWindow, ipcMain, dialog, Tray, Menu, globalShortcut, nativeI
 const fs = require('fs');
 const path = require('path');
 
+const APP_NAME = 'Personal Notes';
+const APP_ID = 'com.personalnotes.app';
 const CONFIG_PATH = () => path.join(app.getPath('userData'), 'settings.json');
 const NOTE_FILE_PREFIX = 'note-';
 
@@ -9,6 +11,9 @@ let mainWindow;
 let quickWindow;
 let tray;
 let notesFolder = null;
+
+app.setName(APP_NAME);
+app.setAppUserModelId(APP_ID);
 
 function readSettings() {
   try {
@@ -38,7 +43,7 @@ function getRendererLocation(mode) {
     return { type: 'url', value: `${devUrl}${suffix}` };
   }
 
-  const filePath = path.resolve(app.getAppPath(), '..', 'web', 'dist', 'index.html');
+  const filePath = path.join(app.getAppPath(), 'renderer', 'index.html');
   return { type: 'file', value: filePath, query: mode ? { mode } : undefined };
 }
 
@@ -49,6 +54,7 @@ function createMainWindow() {
     minWidth: 960,
     minHeight: 640,
     backgroundColor: '#f4efe8',
+    title: APP_NAME,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
@@ -77,7 +83,7 @@ function createQuickWindow() {
     maximizable: false,
     minimizable: false,
     alwaysOnTop: true,
-    title: 'Quick Note',
+    title: `${APP_NAME} Quick Note`,
     backgroundColor: '#f4efe8',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
@@ -123,18 +129,10 @@ function showMainWindow() {
 }
 
 function createTray() {
-  const svg = `
-    <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <rect width="24" height="24" rx="6" fill="#2a2724"/>
-      <path d="M7 7h10v2H7zm0 4h10v2H7zm0 4h7v2H7z" fill="#f4efe8"/>
-    </svg>
-  `;
-  const icon = nativeImage.createFromDataURL(
-    `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`,
-  );
+  const icon = createAppIcon().resize({ width: 18, height: 18 });
 
   tray = new Tray(icon);
-  tray.setToolTip('Personal Notes');
+  tray.setToolTip(APP_NAME);
   tray.on('click', showQuickCapture);
 
   const menu = Menu.buildFromTemplate([
@@ -144,6 +142,19 @@ function createTray() {
     { label: 'Quit', click: () => app.quit() },
   ]);
   tray.setContextMenu(menu);
+}
+
+function createAppIcon() {
+  const svg = `
+    <svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+      <rect width="256" height="256" rx="56" fill="#2a2724"/>
+      <rect x="60" y="64" width="136" height="16" rx="8" fill="#f4efe8"/>
+      <rect x="60" y="104" width="136" height="16" rx="8" fill="#f4efe8"/>
+      <rect x="60" y="144" width="96" height="16" rx="8" fill="#f4efe8"/>
+    </svg>
+  `;
+
+  return nativeImage.createFromDataURL(`data:image/svg+xml;utf8,${encodeURIComponent(svg)}`);
 }
 
 function sanitizeId(value) {
@@ -270,6 +281,10 @@ async function saveNotesToDisk(notes) {
 }
 
 app.whenReady().then(() => {
+  if (process.platform === 'darwin' && app.dock) {
+    app.dock.setIcon(createAppIcon());
+  }
+
   readSettings();
   createMainWindow();
   createTray();
