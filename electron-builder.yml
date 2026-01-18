@@ -1,0 +1,20 @@
+appId: com.personalnotes.app
+productName: Personal Notes
+directories:
+  app: apps/electron
+  output: dist-electron
+  buildResources: apps/electron/assets
+files:
+  - '**/*'
+extraResources:
+  - from: apps/web/dist
+    to: renderer
+mac:
+  target: dmg
+  icon: apps/electron/assets/icon.icns
+win:
+  target: nsis
+  icon: apps/electron/assets/icon.ico
+linux:
+  target: AppImage
+  icon: apps/electron/assets/icon.png

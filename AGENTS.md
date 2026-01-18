@@ -16,8 +16,11 @@ npm run dev:electron        # Vite + Electron (expects localhost:5173)
 npm run build:web           # web production build
 npm run test:web            # web tests (Vitest)
 npm run lint:web            # lint web app
+npm run format:web          # format check (Prettier)
+npm run pack:electron       # package Electron app into a folder (dist-electron/)
+npm run dist:electron       # build distributable installers (DMG/NSIS/AppImage)
 ```
-For ad-hoc runs: `npm run dev -w apps/web` or `npm run start -w apps/electron`.
+For ad-hoc runs: `npm run dev -w apps/web`, `npm run preview -w apps/web`, or `npm run start -w apps/electron`.
 CI runs tests, lint, web build, and Docker build (see `.github/workflows/ci.yml`).
 
 ## Coding Style & Naming Conventions
@@ -38,6 +41,7 @@ Use Conventional Commits (`feat:`, `fix:`, `chore:`). PRs should include a summa
 - The app requires a selected folder to persist notes on disk; use the "Open folder" action in the UI.
 - "Sync" reloads notes from disk.
 - Quick capture opens from the tray and via the global shortcut `Cmd/Ctrl+Shift+N`.
+- Packaging uses `electron-builder.yml`; update `apps/electron/assets/icon.png` and regenerate `icon.icns`/`icon.ico` for platform bundles.
 
 ## Security & Configuration
 Keep secrets in `.env` files and do not commit them. For Vite-style configs, prefix client-exposed variables with `VITE_`.
