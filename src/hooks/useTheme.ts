@@ -24,15 +24,29 @@ function isThemeId(value: string | null): value is ThemeId {
   return THEME_OPTIONS.some((option) => option.id === value);
 }
 
-export function useTheme() {
-  const [theme, setTheme] = useState<ThemeId>(() => {
-    if (typeof window === 'undefined') {
-      return 'dawn';
-    }
+function getInitialTheme(): ThemeId {
+  if (typeof window === 'undefined') {
+    return 'dawn';
+  }
 
+  try {
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-    return isThemeId(stored) ? stored : 'dawn';
-  });
+    if (isThemeId(stored)) {
+      return stored;
+    }
+  } catch {
+    return 'dawn';
+  }
+
+  if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) {
+    return 'cobalt';
+  }
+
+  return 'dawn';
+}
+
+export function useTheme() {
+  const [theme, setTheme] = useState<ThemeId>(() => getInitialTheme());
 
   useEffect(() => {
     if (typeof document === 'undefined') {
@@ -46,6 +60,23 @@ export function useTheme() {
     } catch {
       return;
     }
+  }, [theme]);
+
+  useEffect(() => {
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== THEME_STORAGE_KEY) {
+        return;
+      }
+
+      if (!isThemeId(event.newValue) || event.newValue === theme) {
+        return;
+      }
+
+      setTheme(event.newValue);
+    };
+
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, [theme]);
 
   const themes = useMemo<ThemeOption[]>(() => [...THEME_OPTIONS], []);
