@@ -3,6 +3,9 @@ dist/
 .env
 .env.*.local
 
+apps/**/node_modules/
+apps/**/dist/
+
 .DS_Store
 Thumbs.db
 

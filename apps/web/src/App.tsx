@@ -4,6 +4,10 @@ import remarkGfm from 'remark-gfm';
 import { useNotes } from './hooks/useNotes';
 import { useTheme } from './hooks/useTheme';
 import {
+  defaultNotesRepository,
+  ElectronNotesRepository,
+} from './persistence/notesRepository';
+import {
   collectTags,
   filterNotes,
   formatDate,
@@ -16,13 +20,67 @@ import {
 const emptyStateCopy =
   'Capture your first thought, link it with tags, and see the Markdown preview instantly.';
 
+const folderLabel = (folder: string) => {
+  const parts = folder.split(/[/\\]/).filter(Boolean);
+  return parts.slice(-2).join('/');
+};
+
+const deriveTitle = (content: string) => {
+  const line = content.split('\n').find((value) => value.trim().length > 0) ?? '';
+  const trimmed = line.trim();
+  return trimmed.length > 0 ? trimmed.slice(0, 60) : 'Quick note';
+};
+
 function App() {
-  const { notes, addNote, updateNote, deleteNote } = useNotes();
+  const isElectron = typeof window !== 'undefined' && Boolean(window.electronAPI);
+  const repository = useMemo(
+    () => (isElectron ? new ElectronNotesRepository() : defaultNotesRepository),
+    [isElectron],
+  );
+  const { notes, hydrated, addNote, updateNote, deleteNote, reload } = useNotes(repository);
   const { theme, themes, setTheme } = useTheme();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [tagsInput, setTagsInput] = useState('');
+  const [notesFolder, setNotesFolder] = useState<string | null>(null);
+  const [isSelectingFolder, setIsSelectingFolder] = useState(false);
+  const [quickContent, setQuickContent] = useState('');
+  const [quickTags, setQuickTags] = useState('');
+
+  const isQuickCapture = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    return new URLSearchParams(window.location.search).get('mode') === 'quick';
+  }, []);
+
+  useEffect(() => {
+    const electronAPI = window.electronAPI;
+    if (!isElectron || !electronAPI) {
+      return;
+    }
+
+    let isActive = true;
+
+    const loadFolder = async () => {
+      const folder = await electronAPI.getNotesFolder();
+      if (!isActive) {
+        return;
+      }
+      setNotesFolder(folder);
+      if (folder) {
+        await reload();
+      }
+    };
+
+    loadFolder();
+
+    return () => {
+      isActive = false;
+    };
+  }, [isElectron, reload]);
 
   useEffect(() => {
     if (notes.length === 0) {
@@ -55,7 +113,14 @@ function App() {
     [notes, searchQuery, activeTag],
   );
 
+  const canPersistNotes = !isElectron || Boolean(notesFolder);
+
   const handleCreateNote = () => {
+    if (!canPersistNotes && window.electronAPI) {
+      handleSelectFolder();
+      return;
+    }
+
     const note = addNote();
     setSelectedId(note.id);
     setSearchQuery('');
@@ -81,9 +146,98 @@ function App() {
     updateNote(selectedNote.id, { tags: normalizeTagsInput(tagsInput) });
   };
 
+  const handleSelectFolder = async () => {
+    const electronAPI = window.electronAPI;
+    if (!electronAPI) {
+      return;
+    }
+
+    setIsSelectingFolder(true);
+    const folder = await electronAPI.selectNotesFolder();
+    setIsSelectingFolder(false);
+    if (folder) {
+      setNotesFolder(folder);
+      await reload();
+    }
+  };
+
+  const handleSync = async () => {
+    await reload();
+  };
+
+  const handleQuickSave = () => {
+    if (!quickContent.trim() || (!canPersistNotes && isElectron)) {
+      return;
+    }
+
+    const note = addNote();
+    updateNote(note.id, {
+      title: deriveTitle(quickContent),
+      content: quickContent.trim(),
+      tags: normalizeTagsInput(quickTags),
+    });
+
+    if (isQuickCapture) {
+      window.close();
+    }
+  };
+
   const previewContent = selectedNote?.content?.trim()
     ? selectedNote.content
     : 'Start writing to see the preview.';
+
+  if (isQuickCapture) {
+    return (
+      <div className="min-h-screen px-4 py-6">
+        <div className="mx-auto flex w-full max-w-md flex-col gap-4 rounded-3xl border border-panel-border bg-panel p-6 shadow-soft">
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Quick capture</p>
+            <h1 className="text-2xl font-semibold text-ink">New note</h1>
+            {isElectron && !notesFolder && (
+              <p className="mt-2 text-xs text-slate-500">
+                Select a notes folder in the main app to save quick notes.
+              </p>
+            )}
+          </div>
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+              Tags
+            </label>
+            <input
+              type="text"
+              value={quickTags}
+              onChange={(event) => setQuickTags(event.target.value)}
+              placeholder="e.g. inbox, idea"
+              className="mt-2 w-full rounded-2xl border border-panel-border bg-white px-4 py-2 text-sm text-ink shadow-sm focus:border-ink focus:outline-none"
+            />
+          </div>
+          <textarea
+            value={quickContent}
+            onChange={(event) => setQuickContent(event.target.value)}
+            placeholder="Write your note in Markdown..."
+            className="min-h-[220px] w-full rounded-2xl border border-panel-border bg-white px-4 py-3 text-sm text-ink shadow-sm focus:border-ink focus:outline-none"
+          />
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => window.close()}
+              className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleQuickSave}
+              disabled={!quickContent.trim() || (isElectron && !notesFolder)}
+              className="rounded-full bg-ink px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-soft transition disabled:cursor-not-allowed disabled:bg-slate-400"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
@@ -95,13 +249,39 @@ function App() {
             <p className="mt-2 max-w-xl text-sm text-slate-600">{emptyStateCopy}</p>
           </div>
           <div className="flex flex-col gap-3 md:items-end">
-            <button
-              type="button"
-              onClick={handleCreateNote}
-              className="rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5"
-            >
-              New note
-            </button>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              {isElectron && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleSelectFolder}
+                    disabled={isSelectingFolder}
+                    className="rounded-full border border-panel-border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600 transition hover:border-ink hover:text-ink disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {notesFolder ? 'Change folder' : 'Open folder'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSync}
+                    disabled={!notesFolder}
+                    className="rounded-full border border-panel-border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600 transition hover:border-ink hover:text-ink disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    Sync
+                  </button>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={handleCreateNote}
+                disabled={!canPersistNotes}
+                className="rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-500"
+              >
+                New note
+              </button>
+            </div>
+            {isElectron && notesFolder && (
+              <p className="text-xs text-slate-500">Folder: {folderLabel(notesFolder)}</p>
+            )}
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
                 Theme
@@ -191,7 +371,11 @@ function App() {
             </div>
 
             <div className="mt-6 space-y-3">
-              {filteredNotes.length === 0 ? (
+              {!hydrated ? (
+                <div className="rounded-2xl border border-dashed border-panel-border px-4 py-6 text-sm text-slate-500">
+                  Loading notes...
+                </div>
+              ) : filteredNotes.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-panel-border px-4 py-6 text-sm text-slate-500">
                   No notes match this filter.
                 </div>
@@ -345,11 +529,16 @@ function App() {
                   Empty vault
                 </div>
                 <h2 className="text-2xl font-semibold text-ink">Create your first note</h2>
-                <p className="max-w-md text-sm text-slate-600">{emptyStateCopy}</p>
+                <p className="max-w-md text-sm text-slate-600">
+                  {canPersistNotes
+                    ? emptyStateCopy
+                    : 'Open a folder to store notes on disk and enable syncing.'}
+                </p>
                 <button
                   type="button"
                   onClick={handleCreateNote}
-                  className="rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5"
+                  disabled={!canPersistNotes}
+                  className="rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-500"
                 >
                   New note
                 </button>

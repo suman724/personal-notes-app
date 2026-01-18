@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useNotes } from '../hooks/useNotes';
 import { Note } from '../types';
 import { NotesRepository } from '../persistence/notesRepository';
@@ -11,20 +11,22 @@ class MemoryRepository implements NotesRepository {
     this.store = initial;
   }
 
-  loadNotes(): Note[] {
+  async loadNotes(): Promise<Note[]> {
     return this.store;
   }
 
-  saveNotes(notes: Note[]): void {
+  async saveNotes(notes: Note[]): Promise<void> {
     this.saved = notes;
     this.store = notes;
   }
 }
 
 describe('useNotes', () => {
-  it('adds, updates, and deletes notes', () => {
+  it('adds, updates, and deletes notes', async () => {
     const repository = new MemoryRepository();
     const { result } = renderHook(() => useNotes(repository));
+
+    await waitFor(() => expect(result.current.hydrated).toBe(true));
 
     let created: Note | null = null;
 
@@ -50,7 +52,7 @@ describe('useNotes', () => {
     expect(result.current.notes).toHaveLength(0);
   });
 
-  it('hydrates notes from the repository and sorts them by update time', () => {
+  it('hydrates notes from the repository and sorts them by update time', async () => {
     const repository = new MemoryRepository([
       {
         id: '1',
@@ -71,6 +73,8 @@ describe('useNotes', () => {
     ]);
 
     const { result } = renderHook(() => useNotes(repository));
+
+    await waitFor(() => expect(result.current.hydrated).toBe(true));
 
     expect(result.current.notes[0].id).toBe('2');
     expect(result.current.notes[1].id).toBe('1');
