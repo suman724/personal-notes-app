@@ -94,11 +94,14 @@ function App() {
   }, [notes, selectedId]);
 
   const selectedNote = notes.find((note) => note.id === selectedId) ?? null;
-  const selectedTagsSignature = selectedNote ? selectedNote.tags.join(',') : '';
+  const selectedTagsValue = useMemo(
+    () => (selectedNote ? tagsToString(selectedNote.tags) : ''),
+    [selectedNote],
+  );
 
   useEffect(() => {
-    setTagsInput(selectedNote ? tagsToString(selectedNote.tags) : '');
-  }, [selectedNote?.id, selectedTagsSignature]);
+    setTagsInput(selectedTagsValue);
+  }, [selectedTagsValue]);
 
   const tags = useMemo(() => collectTags(notes), [notes]);
 
