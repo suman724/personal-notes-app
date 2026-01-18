@@ -16,8 +16,9 @@ npm run dev:electron        # Vite + Electron (expects localhost:5173)
 npm run build:web           # web production build
 npm run test:web            # web tests (Vitest)
 npm run lint:web            # lint web app
+npm run format:web          # format check (Prettier)
 ```
-For ad-hoc runs: `npm run dev -w apps/web` or `npm run start -w apps/electron`.
+For ad-hoc runs: `npm run dev -w apps/web`, `npm run preview -w apps/web`, or `npm run start -w apps/electron`.
 CI runs tests, lint, web build, and Docker build (see `.github/workflows/ci.yml`).
 
 ## Coding Style & Naming Conventions
