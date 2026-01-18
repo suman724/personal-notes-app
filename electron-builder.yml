@@ -11,10 +11,10 @@ extraFiles:
     to: renderer
 mac:
   target: dmg
-  icon: apps/electron/assets/icon.png
+  icon: apps/electron/assets/icon.icns
 win:
   target: nsis
-  icon: apps/electron/assets/icon.png
+  icon: apps/electron/assets/icon.ico
 linux:
   target: AppImage
   icon: apps/electron/assets/icon.png

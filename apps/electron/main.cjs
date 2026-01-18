@@ -4,6 +4,8 @@ const path = require('path');
 
 const APP_NAME = 'Personal Notes';
 const APP_ID = 'com.personalnotes.app';
+const ASSET_DIR = () =>
+  app.isPackaged ? path.join(app.getAppPath(), 'assets') : path.join(__dirname, 'assets');
 const CONFIG_PATH = () => path.join(app.getPath('userData'), 'settings.json');
 const NOTE_FILE_PREFIX = 'note-';
 
@@ -130,6 +132,9 @@ function showMainWindow() {
 
 function createTray() {
   const icon = createAppIcon().resize({ width: 18, height: 18 });
+  if (process.platform === 'darwin') {
+    icon.setTemplateImage(true);
+  }
 
   tray = new Tray(icon);
   tray.setToolTip(APP_NAME);
@@ -145,7 +150,12 @@ function createTray() {
 }
 
 function createAppIcon() {
-  const svg = `
+  const iconPath = path.join(ASSET_DIR(), 'icon.png');
+  if (fs.existsSync(iconPath)) {
+    return nativeImage.createFromPath(iconPath);
+  }
+
+  const fallback = `
     <svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
       <rect width="256" height="256" rx="56" fill="#2a2724"/>
       <rect x="60" y="64" width="136" height="16" rx="8" fill="#f4efe8"/>
@@ -154,7 +164,7 @@ function createAppIcon() {
     </svg>
   `;
 
-  return nativeImage.createFromDataURL(`data:image/svg+xml;utf8,${encodeURIComponent(svg)}`);
+  return nativeImage.createFromDataURL(`data:image/svg+xml;utf8,${encodeURIComponent(fallback)}`);
 }
 
 function sanitizeId(value) {

@@ -41,7 +41,7 @@ Use Conventional Commits (`feat:`, `fix:`, `chore:`). PRs should include a summa
 - The app requires a selected folder to persist notes on disk; use the "Open folder" action in the UI.
 - "Sync" reloads notes from disk.
 - Quick capture opens from the tray and via the global shortcut `Cmd/Ctrl+Shift+N`.
-- Packaging uses `electron-builder.yml`; update `apps/electron/assets/icon.png` for app icons.
+- Packaging uses `electron-builder.yml`; update `apps/electron/assets/icon.png` and regenerate `icon.icns`/`icon.ico` for platform bundles.
 
 ## Security & Configuration
 Keep secrets in `.env` files and do not commit them. For Vite-style configs, prefix client-exposed variables with `VITE_`.
