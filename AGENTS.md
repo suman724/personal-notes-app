@@ -28,6 +28,7 @@ CI runs tests, lint, web build, and Docker build (see `.github/workflows/ci.yml`
 - React components in `PascalCase`, hooks in `camelCase` with `use` prefix.
 - Tailwind utilities for styling; keep long class lists readable.
 - Prefer named exports and keep module names short and consistent.
+- ESLint config lives in `apps/web/.eslintrc.cjs`.
 
 ## Testing Guidelines
 Use Vitest + React Testing Library under `apps/web/src/__tests__/`:
