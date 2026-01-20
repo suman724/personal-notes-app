@@ -12,23 +12,23 @@ Personal Notes is a local-first Markdown notes app with a Vite + React renderer 
 ## Architecture
 ```mermaid
 flowchart LR
-  UI[React UI (apps/web)] --> Hooks[useNotes + useTheme]
-  Hooks --> Repo[NotesRepository]
+  UI["React UI apps/web"] --> Hooks["useNotes and useTheme"]
+  Hooks --> Repo["NotesRepository"]
   Repo -->|Web| LS[(localStorage)]
-  Repo -->|Electron| Preload[preload.cjs]
-  Preload --> IPC[IPC bridge]
-  IPC --> Main[Electron main.cjs]
+  Repo -->|Electron| Preload["preload.cjs"]
+  Preload --> IPC["IPC bridge"]
+  IPC --> Main["Electron main.cjs"]
   Main --> FS[(Notes folder on disk)]
 ```
 
 ```mermaid
 flowchart TB
-  New[Create or update note] --> Save[saveNotes()]
-  Save --> Serialize[Front matter + Markdown]
-  Serialize --> Disk[note-<id>.md files]
-  Disk --> Sync[Sync / reload]
-  Sync --> Hydrate[loadNotes()]
-  Hydrate --> UI[React UI list + preview]
+  New["Create or update note"] --> Save["saveNotes"]
+  Save --> Serialize["Front matter and Markdown"]
+  Serialize --> Disk["note-id.md files"]
+  Disk --> Sync["Sync or reload"]
+  Sync --> Hydrate["loadNotes"]
+  Hydrate --> UI["React UI list and preview"]
 ```
 
 ## Project Layout
